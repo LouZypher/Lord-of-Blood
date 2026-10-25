@@ -121,7 +121,39 @@ for(let level=0;level<5;level++){
  cb(2.6,H-.5,68,masonry,38,base+H/2,0,g);
  if(level===0){
    for(const z of [-22,22])cb(2.6,H-.5,24,masonry,-17,base+H/2,z,g);
-   cb(2.6,5,20,masonry,-17,base+H-2.5,0,g);
+    // Main CASTLE entrance, west facade x=-17 (not the bridge gate).
+    // Two masonry piers and a solid spandrel above a genuine open Gothic arch.
+    cb(2.6,H-.5,4.8,masonry,-17,base+H/2,-7.6,g);
+    cb(2.6,H-.5,4.8,masonry,-17,base+H/2,7.6,g);
+    // Spandrel's lower boundary follows the two curved sides of the pointed arch.
+    const archHalf=5.2, shoulder=9, apex=14.5;
+    const cap=new THREE.Shape();
+    cap.moveTo(-archHalf,H-.5);cap.lineTo(archHalf,H-.5);
+    cap.lineTo(archHalf,shoulder);
+    cap.quadraticCurveTo(archHalf,apex-1.1,0,apex);
+    cap.quadraticCurveTo(-archHalf,apex-1.1,-archHalf,shoulder);
+    cap.closePath();
+    const capMesh=new THREE.Mesh(new THREE.ExtrudeGeometry(cap,{depth:2.6,bevelEnabled:false,curveSegments:18}),masonry);
+    // Shape local horizontal axis is mapped onto world z.
+    capMesh.rotation.y=Math.PI/2;
+    capMesh.position.set(-18.3,base,0);g.add(capMesh);
+    // Stone arch moulding facing the forecourt.
+    const archPts=[];
+    for(let i=0;i<=20;i++){
+      const t=i/20;
+      const z=-archHalf+archHalf*t;
+      const y=(1-t)*(1-t)*shoulder+2*(1-t)*t*(apex-1.1)+t*t*apex;
+      archPts.push(new THREE.Vector3(-18.55,base+y,z));
+    }
+    for(let i=1;i<=20;i++){
+      const t=i/20;
+      const z=archHalf*t;
+      const y=(1-t)*(1-t)*apex+2*(1-t)*t*(apex-1.1)+t*t*shoulder;
+      archPts.push(new THREE.Vector3(-18.55,base+y,z));
+    }
+    const archCurve=new THREE.CatmullRomCurve3(archPts);
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(archCurve,48,.48,8,false),trim));
+    for(const z of [-archHalf,archHalf])cb(.45,shoulder,.48,trim,-18.55,base+shoulder/2,z,g);
  }else cb(2.6,H-.5,68,masonry,-17,base+H/2,0,g);
  // New internal west wall touches the north exterior wall (z=34).
  cb(1.6,H-.5,31,masonry,12,base+H/2,18.5,g);
