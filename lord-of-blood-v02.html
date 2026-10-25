@@ -159,6 +159,12 @@ for(let level=0;level<5;level++){
     sp.rotation.y=Math.PI/2;
     sp.position.set(-18.3,base,0);
     g.add(sp);
+    // Recessed portal: the facade front is x=-18.3 and the wall extends to x=-15.7.
+    // Door leaf is set back inside the opening; frame is seated at the masonry face.
+    const frameX=-18.26, doorX=-17.92;
+    // Stone reveals line the two sides of the opening through the wall thickness.
+    for(const z of [-archHalf-.15,archHalf+.15])
+      cb(2.55,shoulder,.30,trim,-17,base+shoulder/2,z,g);
     // Wood texture and a double-leaf pointed wooden castle door.
     const woodMat=new THREE.MeshStandardMaterial({map:woodTexture,color:0xd5c0a8,roughness:.93,side:THREE.DoubleSide});
     const darkWood=new THREE.MeshStandardMaterial({map:woodTexture,color:0x816353,roughness:.92});
@@ -172,31 +178,31 @@ for(let level=0;level<5;level++){
     doorShape.closePath();
     const door=new THREE.Mesh(new THREE.ShapeGeometry(doorShape,28),woodMat);
     door.rotation.y=Math.PI/2;
-    door.position.set(-18.65,base+.12,0);
+    door.position.set(doorX,base+.12,0);
     g.add(door);
-    // Gothic timber frame follows the actual arch and sits in front of the masonry.
+    // Gothic timber frame follows the arch and is embedded flush in the stonework.
     const archPts=[];
     for(let i=0;i<=24;i++){
       const t=i/24;
       const z=-archHalf+archHalf*t;
       const y=(1-t)*(1-t)*shoulder+2*(1-t)*t*(apex-1.1)+t*t*apex;
-      archPts.push(new THREE.Vector3(-18.78,base+y,z));
+      archPts.push(new THREE.Vector3(frameX,base+y,z));
     }
     for(let i=1;i<=24;i++){
       const t=i/24;
       const z=archHalf*t;
       const y=(1-t)*(1-t)*apex+2*(1-t)*t*(apex-1.1)+t*t*shoulder;
-      archPts.push(new THREE.Vector3(-18.78,base+y,z));
+      archPts.push(new THREE.Vector3(frameX,base+y,z));
     }
     const archCurve=new THREE.CatmullRomCurve3(archPts);
     g.add(new THREE.Mesh(new THREE.TubeGeometry(archCurve,64,.46,8,false),darkWood));
-    for(const z of [-archHalf,archHalf])cb(.6,shoulder,.62,darkWood,-18.78,base+shoulder/2,z,g);
+    for(const z of [-archHalf,archHalf])cb(.6,shoulder,.62,darkWood,frameX,base+shoulder/2,z,g);
     // Vertical oak boards, hinges and handles on both leaves.
-    for(let z=-4.4;z<=4.41;z+=1.1)cb(.09,8.3,.09,darkWood,-18.83,base+4.25,z,g);
-    cb(.18,8.8,.16,iron,-18.94,base+4.5,0,g);
+    for(let z=-4.4;z<=4.41;z+=1.1)cb(.09,8.3,.09,darkWood,doorX-.08,base+4.25,z,g);
+    cb(.18,8.8,.16,iron,doorX-.17,base+4.5,0,g);
     for(const z of [-3.65,3.65]){
-      for(const y of [2.7,7.1])cb(.2,.3,2.2,iron,-18.96,base+y,z,g);
-      cb(.34,.7,.22,iron,-19.04,base+5,z>0?.65:-.65,g);
+      for(const y of [2.7,7.1])cb(.2,.3,2.2,iron,doorX-.19,base+y,z,g);
+      cb(.34,.7,.22,iron,doorX-.27,base+5,z>0?.65:-.65,g);
     }
  }else cb(2.6,H-.5,68,masonry,-17,base+H/2,0,g);
  // New internal west wall touches the north exterior wall (z=34).
