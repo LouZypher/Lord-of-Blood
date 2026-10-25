@@ -68,6 +68,20 @@ function gothicTexture(kind){
  return t;
 }
 const wallTexture=gothicTexture('wall'),slateTexture=gothicTexture('slate'),stoneTexture=gothicTexture('floor');
+// Locally generated oak plank texture; no external assets needed.
+function makeWoodTexture(){
+ const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');
+ x.fillStyle='#513025';x.fillRect(0,0,512,512);
+ for(let k=0;k<12;k++){
+  const z=k*44; x.fillStyle=k%3===0?'#634032':k%3===1?'#714a36':'#59372b';x.fillRect(z+2,0,41,512);
+  x.strokeStyle='rgba(26,12,10,.38)';x.lineWidth=2;
+  for(let j=0;j<9;j++){let v=z+7+j*3.7;x.beginPath();x.moveTo(v,0);x.bezierCurveTo(v+5,150,v-5,330,v+2,512);x.stroke();}
+  x.fillStyle='rgba(220,160,110,.08)';x.fillRect(z+4,0,2,512);
+ }
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
+}
+const woodTexture=makeWoodTexture();
+
 const masonry=new THREE.MeshStandardMaterial({map:wallTexture,color:0xffffff,roughness:.96});
 const trim=new THREE.MeshStandardMaterial({map:wallTexture,color:0xb5a6ad,roughness:.87});
 const roofMat=new THREE.MeshStandardMaterial({map:slateTexture,color:0xffffff,roughness:.94});
@@ -121,39 +135,62 @@ for(let level=0;level<5;level++){
  cb(2.6,H-.5,68,masonry,38,base+H/2,0,g);
  if(level===0){
    for(const z of [-22,22])cb(2.6,H-.5,24,masonry,-17,base+H/2,z,g);
-    // Main CASTLE entrance, west facade x=-17 (not the bridge gate).
-    // Two masonry piers and a solid spandrel above a genuine open Gothic arch.
-    cb(2.6,H-.5,4.8,masonry,-17,base+H/2,-7.6,g);
-    cb(2.6,H-.5,4.8,masonry,-17,base+H/2,7.6,g);
-    // Spandrel's lower boundary follows the two curved sides of the pointed arch.
+    // Main castle entrance: wall cut precisely to the Gothic timber arch.
+    // Opening width 10.4, vertical shoulders 9 and pointed apex 14.5.
     const archHalf=5.2, shoulder=9, apex=14.5;
-    const cap=new THREE.Shape();
-    cap.moveTo(-archHalf,H-.5);cap.lineTo(archHalf,H-.5);
-    cap.lineTo(archHalf,shoulder);
-    cap.quadraticCurveTo(archHalf,apex-1.1,0,apex);
-    cap.quadraticCurveTo(-archHalf,apex-1.1,-archHalf,shoulder);
-    cap.closePath();
-    const capMesh=new THREE.Mesh(new THREE.ExtrudeGeometry(cap,{depth:2.6,bevelEnabled:false,curveSegments:18}),masonry);
-    // Shape local horizontal axis is mapped onto world z.
-    capMesh.rotation.y=Math.PI/2;
-    capMesh.position.set(-18.3,base,0);g.add(capMesh);
-    // Stone arch moulding facing the forecourt.
+    const wallTop=H-.5;
+    const spandrel=new THREE.Shape();
+    spandrel.moveTo(-archHalf,wallTop);
+    spandrel.lineTo(archHalf,wallTop);
+    spandrel.lineTo(archHalf,shoulder);
+    spandrel.quadraticCurveTo(archHalf,apex-1.1,0,apex);
+    spandrel.quadraticCurveTo(-archHalf,apex-1.1,-archHalf,shoulder);
+    spandrel.closePath();
+    const spGeo=new THREE.ExtrudeGeometry(spandrel,{depth:2.6,bevelEnabled:false,curveSegments:24});
+    // Shape local X = facade Z, shape local Y = world Y; extrusion goes along world X.
+    const sp=new THREE.Mesh(spGeo,masonry);
+    sp.rotation.y=Math.PI/2;
+    sp.position.set(-18.3,base,0);
+    g.add(sp);
+    // Wood texture and a double-leaf pointed wooden castle door.
+    const woodMat=new THREE.MeshStandardMaterial({map:woodTexture,color:0xd5c0a8,roughness:.93,side:THREE.DoubleSide});
+    const darkWood=new THREE.MeshStandardMaterial({map:woodTexture,color:0x816353,roughness:.92});
+    const iron=new THREE.MeshStandardMaterial({color:0x242127,metalness:.78,roughness:.43});
+    const doorShape=new THREE.Shape();
+    doorShape.moveTo(-archHalf+.18,0);
+    doorShape.lineTo(archHalf-.18,0);
+    doorShape.lineTo(archHalf-.18,shoulder-.13);
+    doorShape.quadraticCurveTo(archHalf-.18,apex-1.25,0,apex-.28);
+    doorShape.quadraticCurveTo(-archHalf+.18,apex-1.25,-archHalf+.18,shoulder-.13);
+    doorShape.closePath();
+    const door=new THREE.Mesh(new THREE.ShapeGeometry(doorShape,28),woodMat);
+    door.rotation.y=Math.PI/2;
+    door.position.set(-18.65,base+.12,0);
+    g.add(door);
+    // Gothic timber frame follows the actual arch and sits in front of the masonry.
     const archPts=[];
-    for(let i=0;i<=20;i++){
-      const t=i/20;
+    for(let i=0;i<=24;i++){
+      const t=i/24;
       const z=-archHalf+archHalf*t;
       const y=(1-t)*(1-t)*shoulder+2*(1-t)*t*(apex-1.1)+t*t*apex;
-      archPts.push(new THREE.Vector3(-18.55,base+y,z));
+      archPts.push(new THREE.Vector3(-18.78,base+y,z));
     }
-    for(let i=1;i<=20;i++){
-      const t=i/20;
+    for(let i=1;i<=24;i++){
+      const t=i/24;
       const z=archHalf*t;
       const y=(1-t)*(1-t)*apex+2*(1-t)*t*(apex-1.1)+t*t*shoulder;
-      archPts.push(new THREE.Vector3(-18.55,base+y,z));
+      archPts.push(new THREE.Vector3(-18.78,base+y,z));
     }
     const archCurve=new THREE.CatmullRomCurve3(archPts);
-    g.add(new THREE.Mesh(new THREE.TubeGeometry(archCurve,48,.48,8,false),trim));
-    for(const z of [-archHalf,archHalf])cb(.45,shoulder,.48,trim,-18.55,base+shoulder/2,z,g);
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(archCurve,64,.46,8,false),darkWood));
+    for(const z of [-archHalf,archHalf])cb(.6,shoulder,.62,darkWood,-18.78,base+shoulder/2,z,g);
+    // Vertical oak boards, hinges and handles on both leaves.
+    for(let z=-4.4;z<=4.41;z+=1.1)cb(.09,8.3,.09,darkWood,-18.83,base+4.25,z,g);
+    cb(.18,8.8,.16,iron,-18.94,base+4.5,0,g);
+    for(const z of [-3.65,3.65]){
+      for(const y of [2.7,7.1])cb(.2,.3,2.2,iron,-18.96,base+y,z,g);
+      cb(.34,.7,.22,iron,-19.04,base+5,z>0?.65:-.65,g);
+    }
  }else cb(2.6,H-.5,68,masonry,-17,base+H/2,0,g);
  // New internal west wall touches the north exterior wall (z=34).
  cb(1.6,H-.5,31,masonry,12,base+H/2,18.5,g);
@@ -201,7 +238,7 @@ peak(17,17,19,32,towerBase+27.5,18,keep);
 // Toggle floors without modifying the terrain, bridge or touch controls.
 const controls=document.getElementById('controls');const floorButton=document.createElement('button');floorButton.textContent='Etagen: Alle';controls.appendChild(floorButton);
 let floorView=5;floorButton.onclick=()=>{floorView=(floorView+5)%6;for(let i=0;i<5;i++)storeys[i].visible=i<floorView;roofs.visible=floorView===5;keep.visible=floorView===5;floorButton.textContent=floorView===5?'Etagen: Alle':'Etagen: '+floorView};
-document.querySelector('#header small').textContent='V02 · DACHTURM KORRIGIERT';
+document.querySelector('#header small').textContent='V02 · GOTISCHES SCHLOSSPORTAL';
 
 // Camera orbit, tilt, zoom and two-finger pan.
 let target=new THREE.Vector3(0,0,0),yaw=.85,pitch=.92,dist=225;function updateCamera(){let c=Math.cos(pitch);camera.position.set(target.x+dist*c*Math.sin(yaw),target.y+dist*Math.sin(pitch),target.z+dist*c*Math.cos(yaw));camera.lookAt(target)}updateCamera();let touches=new Map(),prevMid=null,prevDistance=0;
