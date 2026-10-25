@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Lord of Blood – Welt V01</title><style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#090b12;color:#e9ddc9;font-family:Georgia,serif;touch-action:none}canvas{display:block;touch-action:none}#ui{position:fixed;inset:0;pointer-events:none}#header{position:absolute;top:env(safe-area-inset-top,12px);left:14px;text-shadow:0 2px 8px #000}h1{font-size:20px;letter-spacing:2px;color:#dfb6a7;margin:8px 0 3px}small{font:11px system-ui;color:#c6b8aa}#help{position:absolute;bottom:calc(env(safe-area-inset-bottom,8px) + 10px);left:10px;right:10px;text-align:center;font:12px system-ui;color:#ded6cc;text-shadow:0 2px 6px black}#controls{position:absolute;right:12px;top:calc(env(safe-area-inset-top,12px) + 12px);display:flex;flex-direction:column;gap:8px;pointer-events:auto}button{background:#191b27dd;color:#e9d7c8;border:1px solid #7b6061;border-radius:9px;padding:9px 11px;font:12px system-ui}#loading{position:absolute;inset:0;display:grid;place-items:center;background:#090b12;color:#cda6a0;font-size:20px;z-index:5}#error{position:absolute;top:45%;left:8%;right:8%;text-align:center;color:#ffd5ce;font:14px system-ui;display:none}</style></head><body><div id="loading">Lord of Blood lädt …</div><div id="error"></div><div id="ui"><div id="header"><h1>LORD OF BLOOD</h1><small>WELT V01 · DAS FELSPLATEAU</small></div><div id="controls"><button id="reset">Ansicht zurück</button><button id="grid">Raster: Aus</button></div><div id="help">1 Finger: Drehen / Neigen · 2 Finger: Verschieben / Zoomen</div></div>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#090b12;color:#e9ddc9;font-family:Georgia,serif;touch-action:none}canvas{display:block;touch-action:none}#ui{position:fixed;inset:0;pointer-events:none}#header{position:absolute;top:env(safe-area-inset-top,12px);left:14px;text-shadow:0 2px 8px #000}h1{font-size:20px;letter-spacing:2px;color:#dfb6a7;margin:8px 0 3px}small{font:11px system-ui;color:#c6b8aa}#help{position:absolute;bottom:calc(env(safe-area-inset-bottom,8px) + 10px);left:10px;right:10px;text-align:center;font:12px system-ui;color:#ded6cc;text-shadow:0 2px 6px black}#controls{position:absolute;right:12px;top:calc(env(safe-area-inset-top,12px) + 12px);display:flex;flex-direction:column;gap:8px;pointer-events:auto}button{background:#191b27dd;color:#e9d7c8;border:1px solid #7b6061;border-radius:9px;padding:9px 11px;font:12px system-ui}#loading{position:absolute;inset:0;display:grid;place-items:center;background:#090b12;color:#cda6a0;font-size:20px;z-index:5}#error{position:absolute;top:45%;left:8%;right:8%;text-align:center;color:#ffd5ce;font:14px system-ui;display:none}</style></head><body><div id="loading">Lord of Blood lädt …</div><div id="error"></div><div id="ui"><div id="header"><h1>LORD OF BLOOD</h1><small>WELT V01 · DIE VAMPIRFESTUNG</small></div><div id="controls"><button id="reset">Ansicht zurück</button><button id="grid">Raster: Aus</button><button id="floors">Etagen: Alle</button></div><div id="help">1 Finger: Drehen / Neigen · 2 Finger: Verschieben / Zoomen</div></div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
 try {
@@ -36,6 +36,126 @@ const sky=new THREE.Mesh(new THREE.SphereGeometry(1200,32,16),new THREE.ShaderMa
  vertexShader:'varying vec3 vP; void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
  fragmentShader:'varying vec3 vP;void main(){float h=normalize(vP).y;vec3 low=vec3(.42,.055,.075);vec3 high=vec3(.018,.009,.025);float t=smoothstep(-.12,.72,h);gl_FragColor=vec4(mix(low,high,t),1.0);}'
 }));scene.add(sky);
+
+// Gothic five-storey fortress. Each storey has a physical slab and a stairwell.
+const castle = new THREE.Group();
+scene.add(castle);
+const stone = new THREE.MeshStandardMaterial({color:0x35333e,roughness:.93});
+const stoneDark = new THREE.MeshStandardMaterial({color:0x22212a,roughness:.96});
+const stoneTrim = new THREE.MeshStandardMaterial({color:0x5c5360,roughness:.9});
+const roofMat = new THREE.MeshStandardMaterial({color:0x171b28,roughness:.82});
+const glass = new THREE.MeshStandardMaterial({color:0xff7045,emissive:0x9c2a13,emissiveIntensity:.65,roughness:.35});
+const iron = new THREE.MeshStandardMaterial({color:0x15131b,metalness:.55,roughness:.6});
+const castleFloors = [], roofs = new THREE.Group();
+castle.add(roofs);
+function cmesh(geo,material,x,y,z,parent=castle){
+  const obj=new THREE.Mesh(geo,material);
+  obj.position.set(x,y,z);obj.castShadow=true;obj.receiveShadow=true;parent.add(obj);return obj;
+}
+function cb(w,h,d,material,x,y,z,parent=castle){return cmesh(new THREE.BoxGeometry(w,h,d),material,x,y,z,parent);}
+function cy(rt,rb,h,material,x,y,z,segments=10,parent=castle){return cmesh(new THREE.CylinderGeometry(rt,rb,h,segments),material,x,y,z,parent);}
+function cone(radius,height,material,x,y,z,segments=8,parent=castle){return cmesh(new THREE.ConeGeometry(radius,height,segments),material,x,y,z,parent);}
+const Y0=1.6, floorH=9, castleW=58, castleD=52;
+const CX=10,CZ=4;
+// Main gate opens toward the bridge (negative X).
+cb(3,12,20,stoneDark,-32,7,4);
+for(let z of [-23,31]) {
+  cb(68,12,3.2,stone,-2,8,z);
+  for(let x=-33;x<=29;x+=5) cb(2.6,2.6,4.1,stoneTrim,x,15,z);
+}
+for(let x of [-35,31]) {
+  cb(3.2,12,54,stone,x,8,4);
+  for(let z=-21;z<=29;z+=5) {
+    if(x===-35 && Math.abs(z-4)<8)continue;
+    cb(4,2.5,2.6,stoneTrim,x,15,z);
+  }
+}
+// Gatehouse with tall pointed entrance and lanterns.
+for(let z of [-3,11]) cb(5,17,5,stone,-35,11,z);
+cb(5,5,19,stone,-35,23,4);
+for(let z of [-4,12]) cone(4,10,roofMat,-35,30,z,4,roofs);
+for(let z of [-2,10]) {
+  cy(.55,.7,2.5,stoneTrim,-39,6,z,8);
+  cone(.8,2.2,glass,-39,8.4,z);
+}
+// Courtyard paving; building begins to the right of the gate.
+cb(59,.5,51,stoneTrim,5,1.9,4);
+const levels=5;
+for(let f=0;f<levels;f++){
+  const g=new THREE.Group();castle.add(g);castleFloors.push(g);
+  const base=Y0+f*floorH, wallTop=base+floorH;
+  // Solid floor with a genuine stairwell opening on the right rear.
+  cb(34,.8,38,stoneTrim,9,base+.45,3,g);
+  cb(12,.8,23,stoneTrim,32,base+.45,-4,g);
+  cb(12,.8,8,stoneTrim,32,base+.45,20,g);
+  // Perimeter walls, open interior, and cross walls.
+  for(let z of [-16,23]) cb(49,8.4,2,stone,16,base+4.8,z,g);
+  for(let x of [-8,40]) cb(2,8.4,41,stone,x,base+4.8,3.5,g);
+  cb(2,8,17,stoneDark,15,base+4.7,-7,g);
+  cb(17,8,2,stoneDark,0,base+4.7,5,g);
+  // Lit Gothic lancet windows.
+  for(let x of [-2,10,22,34]) for(let z of [-17.15,24.15]){
+    cb(2.3,4.6,.24,glass,x,base+5,z,g);
+    cb(.32,5,.65,iron,x,base+5,z,g);
+    cb(2.7,.35,.8,stoneTrim,x,base+7.5,z,g);
+  }
+  for(let z of [-10,2,14]) for(let x of [-9.1,41.1]){
+    cb(.25,4.4,2.1,glass,x,base+5,z,g);
+    cb(.6,4.7,.3,iron,x,base+5,z,g);
+  }
+  // Stairwell with two landings and two flights per storey.
+  const stairX=32, stairZ=12;
+  cb(11,.55,5,stoneTrim,stairX,base+4.7,stairZ,g);
+  for(let step=0;step<10;step++){
+    const rise=(step+1)*floorH/20;
+    cb(4.5,.45,1.5,stoneTrim,stairX-3,base+rise,stairZ-6+step*.58,g);
+    cb(4.5,.45,1.5,stoneTrim,stairX+3,base+floorH/2+rise,stairZ-.5-step*.58,g);
+  }
+  // Architectural cornice around every level.
+  for(let z of [-17.5,24.5])cb(51,.55,2.8,stoneTrim,16,wallTop+.15,z,g);
+  for(let x of [-9.5,41.5])cb(2.8,.55,44,stoneTrim,x,wallTop+.15,3.5,g);
+}
+// Steep main roof and smaller ridgeline pinnacles.
+const roofY=Y0+levels*floorH+5;
+for(let side of [-1,1]){
+  const slope=cb(53,.95,30,roofMat,16,roofY,3.5+side*10,roofs);
+  slope.rotation.x=side*.68;
+}
+cb(53,1,1.8,stoneTrim,16,roofY+9,3.5,roofs);
+for(let x of [-9,41])for(let z of [-18,25]){
+  cy(3.5,4.2,levels*floorH+8,stone,x,Y0+(levels*floorH+8)/2,z,10);
+  cone(5.3,13,roofMat,x,Y0+levels*floorH+14,z,10,roofs);
+  cone(.65,5,iron,x,Y0+levels*floorH+23,z,8,roofs);
+}
+// Tall tower on the RIGHT, matching the reference illustration.
+const TX=38,TZ=-13, towerLevels=7;
+for(let f=0;f<towerLevels;f++){
+  const yy=Y0+f*floorH;
+  cy(8,8,.75,stoneTrim,TX,yy,TZ,12);
+  for(let k=0;k<12;k++){
+    const a=k*Math.PI/6;
+    const px=TX+7.3*Math.cos(a),pz=TZ+7.3*Math.sin(a);
+    const segment=cb(4.2,8.5,1.35,stone,px,yy+4.5,pz);
+    segment.rotation.y=-a-Math.PI/2;
+  }
+  for(let k=0;k<4;k++){
+    const a=k*Math.PI/2;
+    const w=cb(.3,3.9,1.65,glass,TX+8*Math.cos(a),yy+5,TZ+8*Math.sin(a));
+    w.rotation.y=-a;
+  }
+}
+cy(9.5,9.5,2,stoneTrim,TX,Y0+towerLevels*floorH+1,TZ,12);
+cone(11,22,roofMat,TX,Y0+towerLevels*floorH+13,TZ,12,roofs);
+cone(.9,8,iron,TX,Y0+towerLevels*floorH+28,TZ,8,roofs);
+// Roof / upper-floor visibility control for inspecting the interior.
+let floorMode=0;
+document.getElementById('floors').onclick=()=>{
+  floorMode=(floorMode+1)%7;
+  roofs.visible=floorMode===0;
+  castleFloors.forEach((g,i)=>g.visible=floorMode===0 || i<floorMode);
+  document.getElementById('floors').textContent=floorMode===0?'Etagen: Alle':'Etagen: 1–'+Math.min(floorMode,5);
+};
+
 // Camera orbit, tilt, zoom and two-finger pan.
 let target=new THREE.Vector3(0,0,0),yaw=.85,pitch=.92,dist=185;function updateCamera(){let c=Math.cos(pitch);camera.position.set(target.x+dist*c*Math.sin(yaw),target.y+dist*Math.sin(pitch),target.z+dist*c*Math.cos(yaw));camera.lookAt(target)}updateCamera();let touches=new Map(),prevMid=null,prevDistance=0;
 function touchMetrics(){let a=[...touches.values()];if(a.length<2)return null;return {x:(a[0].x+a[1].x)/2,y:(a[0].y+a[1].y)/2,d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)}}
