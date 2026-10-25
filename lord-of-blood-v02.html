@@ -160,17 +160,16 @@ const roof=new THREE.Mesh(new THREE.ConeGeometry(49,18,4),roofMat);
 roof.rotation.y=Math.PI/4;roof.scale.set(1.1,1,1.38);
 roof.position.set(10.5,102,0);roofs.add(roof);
 for(const z of [-23,23]){cc(4.4,4.9,13,masonry,29,101,z,8,roofs);peak(9,9,12,29,113,z,roofs)}
+// Rooftop-only tower: no solid mesh extends down into any floor.
 const keep=new THREE.Group();castle.add(keep);
-cc(8.5,9.4,98,masonry,32,51,18,10,keep);
-for(let level=0;level<5;level++){
- cc(8.5,8.5,.8,floorMat,32,2+level*18,18,10,keep);
- // Keine Turmfenster.
-}
-cc(9.5,9.5,2,trim,32,101,18,10,keep);peak(17,17,19,32,111,18,keep);
+const towerBase=112; // main roof peak at y=111
+cc(8.5,8.5,16,masonry,32,towerBase+8,18,10,keep);
+cc(9.5,9.5,2,trim,32,towerBase+17,18,10,keep);
+peak(17,17,19,32,towerBase+27.5,18,keep);
 // Toggle floors without modifying the terrain, bridge or touch controls.
 const controls=document.getElementById('controls');const floorButton=document.createElement('button');floorButton.textContent='Etagen: Alle';controls.appendChild(floorButton);
 let floorView=5;floorButton.onclick=()=>{floorView=(floorView+5)%6;for(let i=0;i<5;i++)storeys[i].visible=i<floorView;roofs.visible=floorView===5;keep.visible=floorView===5;floorButton.textContent=floorView===5?'Etagen: Alle':'Etagen: '+floorView};
-document.querySelector('#header small').textContent='V02 · GOTISCHE TEXTUREN';
+document.querySelector('#header small').textContent='V02 · DACHTURM KORRIGIERT';
 
 // Camera orbit, tilt, zoom and two-finger pan.
 let target=new THREE.Vector3(0,0,0),yaw=.85,pitch=.92,dist=225;function updateCamera(){let c=Math.cos(pitch);camera.position.set(target.x+dist*c*Math.sin(yaw),target.y+dist*Math.sin(pitch),target.z+dist*c*Math.cos(yaw));camera.lookAt(target)}updateCamera();let touches=new Map(),prevMid=null,prevDistance=0;
