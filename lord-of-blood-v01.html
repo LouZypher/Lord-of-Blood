@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Lord of Blood V01</title><style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#090b12;color:#e9ddc9;font-family:Georgia,serif;touch-action:none}canvas{display:block;touch-action:none}#ui{position:fixed;inset:0;pointer-events:none}#header{position:absolute;top:env(safe-area-inset-top,12px);left:14px;text-shadow:0 2px 8px #000}h1{font-size:20px;letter-spacing:2px;color:#dfb6a7;margin:8px 0 3px}small{font:11px system-ui;color:#c6b8aa}#help{position:absolute;bottom:calc(env(safe-area-inset-bottom,8px) + 10px);left:10px;right:10px;text-align:center;font:12px system-ui;color:#ded6cc;text-shadow:0 2px 6px black}#controls{position:absolute;right:12px;top:calc(env(safe-area-inset-top,12px) + 12px);display:flex;flex-direction:column;gap:8px;pointer-events:auto}button{background:#191b27dd;color:#e9d7c8;border:1px solid #7b6061;border-radius:9px;padding:9px 11px;font:12px system-ui}#loading{position:absolute;inset:0;display:grid;place-items:center;background:#090b12;color:#cda6a0;font-size:20px;z-index:5}#error{position:absolute;top:45%;left:8%;right:8%;text-align:center;color:#ffd5ce;font:14px system-ui;display:none}</style></head><body><div id="loading">Lord of Blood lädt …</div><div id="error"></div><div id="ui"><div id="header"><h1>LORD OF BLOOD</h1><small>WELT 0.1 · DAS FELSPLATEAU</small></div><div id="controls"><button id="reset">Ansicht zurück</button><button id="grid">Raster: An</button></div><div id="help">1 Finger: Drehen / Neigen · 2 Finger: Verschieben / Zoomen</div></div>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#090b12;color:#e9ddc9;font-family:Georgia,serif;touch-action:none}canvas{display:block;touch-action:none}#ui{position:fixed;inset:0;pointer-events:none}#header{position:absolute;top:env(safe-area-inset-top,12px);left:14px;text-shadow:0 2px 8px #000}h1{font-size:20px;letter-spacing:2px;color:#dfb6a7;margin:8px 0 3px}small{font:11px system-ui;color:#c6b8aa}#help{position:absolute;bottom:calc(env(safe-area-inset-bottom,8px) + 10px);left:10px;right:10px;text-align:center;font:12px system-ui;color:#ded6cc;text-shadow:0 2px 6px black}#controls{position:absolute;right:12px;top:calc(env(safe-area-inset-top,12px) + 12px);display:flex;flex-direction:column;gap:8px;pointer-events:auto}button{background:#191b27dd;color:#e9d7c8;border:1px solid #7b6061;border-radius:9px;padding:9px 11px;font:12px system-ui}#loading{position:absolute;inset:0;display:grid;place-items:center;background:#090b12;color:#cda6a0;font-size:20px;z-index:5}#error{position:absolute;top:45%;left:8%;right:8%;text-align:center;color:#ffd5ce;font:14px system-ui;display:none}</style></head><body><div id="loading">Lord of Blood lädt …</div><div id="error"></div><div id="ui"><div id="header"><h1>LORD OF BLOOD</h1><small>WELT 0.1 · DAS FELSPLATEAU</small></div><div id="controls"><button id="reset">Ansicht zurück</button><button id="grid">Raster: Aus</button></div><div id="help">1 Finger: Drehen / Neigen · 2 Finger: Verschieben / Zoomen</div></div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
 try {
@@ -16,7 +16,7 @@ for(let side=0;side<4;side++){for(let i=0;i<64;i++){let t=-49+i*98/63;let x=0,z=
 // Small rocks, off the playable plateau
 for(let i=0;i<130;i++){let a=rand(0,Math.PI*2),r=rand(74,300);let x=Math.cos(a)*r,z=Math.sin(a)*r,h=rand(12,100);let o=cyl(rand(3,10),rand(7,17),h,rock[i%4],x,-h/2-rand(15,55),z,5);o.rotation.z=rand(-.16,.16)}
 // Subtle tiled stone surface, all tiles remain part of a single floor.
-const lines=new THREE.Group();scene.add(lines);const lm=new THREE.LineBasicMaterial({color:0x786f76,transparent:true,opacity:.25});for(let i=-50;i<=50;i++){let g1=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(i,1.53,-50),new THREE.Vector3(i,1.53,50)]);let g2=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-50,1.53,i),new THREE.Vector3(50,1.53,i)]);lines.add(new THREE.Line(g1,lm),new THREE.Line(g2,lm));}
+const lines=new THREE.Group();scene.add(lines);lines.visible=false;const lm=new THREE.LineBasicMaterial({color:0x786f76,transparent:true,opacity:.25});for(let i=-50;i<=50;i++){let g1=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(i,1.53,-50),new THREE.Vector3(i,1.53,50)]);let g2=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-50,1.53,i),new THREE.Vector3(50,1.53,i)]);lines.add(new THREE.Line(g1,lm),new THREE.Line(g2,lm));}
 // Perimeter parapets, with an opening at the bridge entrance on the left.
 for(let i=-49;i<=49;i+=4){for(let z of [-50,50]){box(3.6,2,1.6,wallmat,i,2.4,z);if(i%12===-1)box(1.3,1.5,2.3,edgeMat,i,4,z)}for(let x of [50,-50]){if(x===-50&&Math.abs(i)<9)continue;box(1.6,2,3.6,wallmat,x,2.4,i);}}
 // Bridge connects left edge to the surrounding world.
@@ -54,6 +54,19 @@ for(let level=0;level<5;level++){
  // Floor slab surrounds a 17 x 22 stairwell opening at the rear-right corner.
  cb(55,1.1,45,floorMat,10.5,base,-11.5,g); // z -34 .. 11
  cb(38,1.1,23,floorMat,2,base,22.5,g); // x -17 .. 21
+ // Erdgeschoss: durchgehend geschlossener Steinboden auch im Treppenhaus.
+ if(level===0)cb(17,1.1,23,floorMat,29.5,base,22.5,g);
+ // Geschlossenes Treppenhaus hinten rechts. Türöffnung zur Halle auf Höhe des ersten Laufs.
+ // Westwand x=21; Öffnung z=13..18, Höhe 9 über dem Boden.
+ cb(2,16.9,2,masonry,21,base+9,12,g);
+ cb(2,16.9,16,masonry,21,base+9,26,g);
+ cb(2,7.9,5,masonry,21,base+13.5,15.5,g);
+ // Türrahmen; Durchgang bleibt frei.
+ cb(.7,9,.65,trim,20.7,base+4.5,13,g);
+ cb(.7,9,.65,trim,20.7,base+4.5,18,g);
+ cb(.7,.7,5.65,trim,20.7,base+9,15.5,g);
+ // Südwand des Treppenhauses; Nord- und Ostseite sind Außenwände.
+ cb(17,16.9,2,masonry,29.5,base+9,11,g);
  // Thin landing connector from stairs to main floor at x=21.
  cb(55,16.9,2.6,masonry,10.5,base+9.0,-34,g);
  cb(55,16.9,2.6,masonry,10.5,base+9.0,34,g);
