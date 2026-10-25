@@ -31,57 +31,8 @@ for(let i=0;i<70;i++){let a=rand(0,Math.PI*2),r=rand(260,600),h=rand(50,210);let
 // Clouds and mist as translucent flat discs far below the build surface.
 const mistMat=new THREE.MeshBasicMaterial({color:0x9293a5,transparent:true,opacity:.065,depthWrite:false,side:THREE.DoubleSide});for(let i=0;i<90;i++){let o=mesh(new THREE.CircleGeometry(rand(15,55),24),mistMat,rand(-290,290),rand(-80,-35),rand(-290,290));o.rotation.x=-Math.PI/2;}
 
-// Lord of Blood V02: unchanged V01 fortress geometry occupying most of the 100 x 100 plateau.
-// V02: procedural, locally generated gothic stone, slate and flagstone textures.
-// Geometry, courtyard, bridge, all five floors and stairwell remain from V01.
-function gothicTexture(kind){
- const c=document.createElement('canvas');c.width=c.height=512;
- const ctx=c.getContext('2d');let seed=kind==='wall'?1122:kind==='slate'?4455:7788;
- const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
- const fill=(r,g,b)=>`rgb(${Math.max(0,r|0)},${Math.max(0,g|0)},${Math.max(0,b|0)})`;
- ctx.fillStyle=kind==='slate'?'#20232c':kind==='wall'?'#38363d':'#494148';ctx.fillRect(0,0,512,512);
- if(kind==='slate'){
-  const w=44,h=27;
-  for(let row=0;row<20;row++)for(let col=-1;col<14;col++){
-   const x=col*w+(row%2)*w/2,y=row*h,v=(rnd()-.5)*22;
-   ctx.fillStyle=fill(36+v,39+v,47+v);ctx.fillRect(x+1,y+1,w-2,h-2);
-   ctx.strokeStyle='rgba(8,9,15,.7)';ctx.lineWidth=2;ctx.strokeRect(x+.5,y+.5,w-1,h-1);
-   ctx.fillStyle='rgba(190,188,194,.09)';ctx.fillRect(x+3,y+3,w-6,2);
-  }
- }else{
-  const w=kind==='wall'?76:90,h=kind==='wall'?35:64;
-  for(let row=0;row<Math.ceil(512/h)+1;row++)for(let col=-1;col<Math.ceil(512/w)+1;col++){
-   const x=col*w+(row%2)*w/2,y=row*h,v=(rnd()-.5)*(kind==='wall'?31:37);
-   const base=kind==='wall'?[65,62,68]:[75,66,70];
-   ctx.fillStyle=fill(base[0]+v,base[1]+v,base[2]+v);ctx.fillRect(x+2,y+2,w-3,h-3);
-   ctx.fillStyle='rgba(9,8,13,.65)';ctx.fillRect(x,y,w,2);ctx.fillRect(x,y,2,h);
-   ctx.fillStyle='rgba(215,200,205,.09)';ctx.fillRect(x+4,y+4,w-9,2);
-   for(let n=0;n<13;n++){
-    const px=x+3+rnd()*(w-6),py=y+3+rnd()*(h-6);
-    ctx.fillStyle=rnd()>.5?'rgba(0,0,0,.11)':'rgba(225,215,211,.08)';ctx.fillRect(px,py,1+rnd()*3,1+rnd()*2);
-   }
-  }
- }
- const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;
- t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
- t.repeat.set(kind==='wall'?2:kind==='slate'?3:2,kind==='wall'?3:kind==='slate'?3:2);
- return t;
-}
-const wallTexture=gothicTexture('wall'),slateTexture=gothicTexture('slate'),stoneTexture=gothicTexture('floor');
-const masonry=new THREE.MeshStandardMaterial({map:wallTexture,color:0xffffff,roughness:.96});
-const trim=new THREE.MeshStandardMaterial({map:wallTexture,color:0xb5a6ad,roughness:.87});
-const roofMat=new THREE.MeshStandardMaterial({map:slateTexture,color:0xffffff,roughness:.94});
-const floorMat=new THREE.MeshStandardMaterial({map:stoneTexture,color:0xffffff,roughness:.94});
-const glass=new THREE.MeshStandardMaterial({color:0x7e0d19,emissive:0xa82416,emissiveIntensity:1.45,roughness:.22,metalness:.14});
-// Texture the existing courtyard, bridge and battlements, too.
-paving.map=stoneTexture;paving.color.set(0xffffff);paving.needsUpdate=true;
-wallmat.map=wallTexture;wallmat.color.set(0xc3bac1);wallmat.needsUpdate=true;
-edgeMat.map=wallTexture;edgeMat.color.set(0xe0d5da);edgeMat.needsUpdate=true;
-metal.color.set(0x511b28);
-scene.background=new THREE.Color(0x16131f);scene.fog.color.set(0x29202f);
-// Atmospheric red-amber glow without changing building geometry.
-const gothicLight=new THREE.PointLight(0xa62b24,40,145,2);gothicLight.position.set(-20,48,4);scene.add(gothicLight);
-
+// Lord of Blood V01: expanded fortress occupying most of the 100 x 100 plateau.
+const masonry=mat(0x45424a),trim=mat(0x68616b),roofMat=mat(0x211d29),floorMat=mat(0x50474b),glass= new THREE.MeshBasicMaterial({color:0xd47748});
 const castle=new THREE.Group();scene.add(castle);
 function cb(w,h,d,m,x,y,z,parent=castle){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);parent.add(o);return o}
 function cc(r1,r2,h,m,x,y,z,segments=8,parent=castle){const o=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,segments),m);o.position.set(x,y,z);parent.add(o);return o}
@@ -92,6 +43,36 @@ for(const x of [-47,47]){for(const z of [-30,30])cb(3.5,11,34,masonry,x,7,z);for
 // Left-side entrance stays open for the bridge, flanked by gate towers.
 for(const z of [-13,13]){cc(5.5,6,19,masonry,-44,11,z,8);cc(6,6.2,2,trim,-44,21,z,8);peak(10,10,9,-44,26,z)}
 cb(5,5,17,masonry,-47,16,0); // lintel over open entrance
+
+ // Gothic V02: closed pointed gate, aligned with the bridge.
+ const gateWood=mat(0x251419),gateIron=mat(0x74636a);
+ function pointedShape(w,h,shoulder=.68){
+   const a=new THREE.Shape(),r=w/2;
+   a.moveTo(-r,0);a.lineTo(r,0);a.lineTo(r,h*shoulder);
+   a.quadraticCurveTo(r,h*.84,0,h);
+   a.quadraticCurveTo(-r,h*.84,-r,h*shoulder);
+   a.closePath();return a;
+ }
+ function pointedPanel(w,h,material,x,y,z,rotY=0,depth=.18,parent=castle){
+   const geo=new THREE.ExtrudeGeometry(pointedShape(w,h),{depth,bevelEnabled:false,curveSegments:10});
+   const o=new THREE.Mesh(geo,material);o.position.set(x,y,z);o.rotation.y=rotY;parent.add(o);return o;
+ }
+ // Gate face lies in the x-plane. Closed leaves with ironwork.
+ pointedPanel(16,17,gateWood,-48.95,1.6,0,Math.PI/2,.35);
+ for(const z of [-5.6,-2.8,0,2.8,5.6]){
+   cb(.24,11,.17,gateIron,-49.37,7.1,z);
+ }
+ for(const y of [4.1,8.3,12.5])cb(.26,.22,14.2,gateIron,-49.42,y,0);
+ // Pointed stone arch outline on the outer face of the gate.
+ const gateEdge=trim;
+ for(const side of [-1,1]){
+   const pts=[new THREE.Vector3(-49.5,1.5,side*8.2),
+     new THREE.Vector3(-49.5,13,side*8.2),
+     new THREE.Vector3(-49.5,18.6,0)];
+   const curve=new THREE.CatmullRomCurve3(pts);
+   castle.add(new THREE.Mesh(new THREE.TubeGeometry(curve,18,.55,6,false),gateEdge));
+ }
+
 // Four massive corner towers.
 for(const x of [-44,44])for(const z of [-44,44]){cc(5.5,6.3,22,masonry,x,12,z,8);cc(6.4,6.4,2,trim,x,24,z,8);peak(11,11,11,x,30,z)}
 // Five occupied floors: castle core enlarged, leaving an accessible ring-shaped courtyard.
@@ -153,10 +134,12 @@ for(let level=0;level<5;level++){
    cb(26,1.1,5,stone,25,base+H,5.5,g);
  }
  for(const x of [-7,7,21,33])for(const z of [-35.43,35.43]){
-   cb(2.1,3.6,.22,glass,x,base+H*.55,z,g);
-   cb(2.7,.45,.55,trim,x,base+H*.67,z,g);
+   const side=z<0?-1:1;
+   pointedPanel(2.7,6.2,glass,x-1.35,base+H*.38,z+side*.12,0,.12,g);
+   cb(.14,4,.18,trim,x,base+H*.38+2,z+side*.3,g);
  }
- for(const z of [-26,-13,0,13,26])cb(.22,3.7,2,glass,39.42,base+H*.55,z,g);
+ for(const z of [-26,-13,0,13,26])
+   pointedPanel(2.6,6.2,glass,39.45,base+H*.38,z+1.3,Math.PI/2,.12,g);
 }
 // Roof and right-hand tower raised to match the five 18-unit floors.
 const roofs=new THREE.Group();castle.add(roofs);
@@ -174,7 +157,7 @@ cc(9.5,9.5,2,trim,32,101,18,10,keep);peak(17,17,19,32,111,18,keep);
 // Toggle floors without modifying the terrain, bridge or touch controls.
 const controls=document.getElementById('controls');const floorButton=document.createElement('button');floorButton.textContent='Etagen: Alle';controls.appendChild(floorButton);
 let floorView=5;floorButton.onclick=()=>{floorView=(floorView+5)%6;for(let i=0;i<5;i++)storeys[i].visible=i<floorView;roofs.visible=floorView===5;keep.visible=floorView===5;floorButton.textContent=floorView===5?'Etagen: Alle':'Etagen: '+floorView};
-document.querySelector('#header small').textContent='V02 · GOTISCHE TEXTUREN';
+document.querySelector('#header small').textContent='V02 · GOTISCHE FENSTER UND TOR';
 
 // Camera orbit, tilt, zoom and two-finger pan.
 let target=new THREE.Vector3(0,0,0),yaw=.85,pitch=.92,dist=225;function updateCamera(){let c=Math.cos(pitch);camera.position.set(target.x+dist*c*Math.sin(yaw),target.y+dist*Math.sin(pitch),target.z+dist*c*Math.cos(yaw));camera.lookAt(target)}updateCamera();let touches=new Map(),prevMid=null,prevDistance=0;
