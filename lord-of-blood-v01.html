@@ -49,20 +49,24 @@ for(const x of [-44,44])for(const z of [-44,44]){cc(5.5,6.3,22,masonry,x,12,z,8)
 // Castle spans x -17..38 and z -34..34, with a wide western forecourt.
 
 const storeys=[];
-const H=18, stairX=22, stairZ=17;
-const stairWidth=9, stairLength=14, stairDepth=28;
-const stone= floorMat;
-// Rear-right enclosed stairwell: existing north and east castle exterior walls remain.
+const H=18, stone=floorMat;
+// Stairwell bounds: west x=12, east x=38 (existing outer wall),
+// south z=3, north z=34 (existing outer wall).
+// Two equally wide, adjoining flights x=13..23 and x=23..33.
 for(let level=0;level<5;level++){
  const g=new THREE.Group();castle.add(g);storeys.push(g);
  const base=2+level*H;
- // Solid floors outside stairwell; inside only landings, no slabs under flights.
- // Stairwell footprint x=12..34, z=3..31.
- cb(55,1.1,37,stone,10.5,base,-15.5,g); // z -34..3
- cb(29,1.1,28,stone,-2.5,base,17,g); // x -17..12
- cb(4,1.1,28,stone,36,base,17,g); // x 34..38
- cb(22,1.1,3,stone,23,base,32.5,g); // rear edge
- // Exterior shell: two original outer walls on north and east.
+ // Floor outside stairwell. Ground floor stays fully solid.
+ cb(55,1.1,37,stone,10.5,base,-15.5,g); // south of stairwell
+ cb(29,1.1,31,stone,-2.5,base,18.5,g); // west of stairwell
+ if(level===0)cb(26,1.1,31,stone,25,base,18.5,g);
+ else {
+   // Flush lower and upper landings. No floor beneath the flights.
+   cb(26,1.1,5,stone,25,base,5.5,g); // front z=3..8
+   cb(26,1.1,3,stone,25,base,32.5,g); // rear z=31..34
+   cb(5,1.1,23,stone,35.5,base,19.5,g); // east perimeter
+ }
+ // Retain castle exterior walls, north and east enclose the stairwell.
  cb(55,H-.5,2.6,masonry,10.5,base+H/2,-34,g);
  cb(55,H-.5,2.6,masonry,10.5,base+H/2,34,g);
  cb(2.6,H-.5,68,masonry,38,base+H/2,0,g);
@@ -70,36 +74,36 @@ for(let level=0;level<5;level++){
    for(const z of [-22,22])cb(2.6,H-.5,24,masonry,-17,base+H/2,z,g);
    cb(2.6,5,20,masonry,-17,base+H-2.5,0,g);
  }else cb(2.6,H-.5,68,masonry,-17,base+H/2,0,g);
- // Two newly built internal enclosing walls; entrance centered on south wall.
- cb(2,H-.5,28,masonry,12,base+H/2,17,g);
- cb(6.5,H-.5,2,masonry,15.25,base+H/2,3,g);
- cb(6.5,H-.5,2,masonry,30.75,base+H/2,3,g);
- cb(9, H-5,2,masonry,23,base+5+(H-5)/2,3,g);
- // Door frame, centered in front of the first steps, across stairwell width.
- cb(.7,5,2.5,trim,18.5,base+2.5,3,g);
- cb(.7,5,2.5,trim,27.5,base+2.5,3,g);
- cb(9,.7,2.5,trim,23,base+5,3,g);
- // Two parallel equal-width stair flights touch at the shared central landing.
- // Both are 9 wide; each has 18 risers and rises 9 units.
- // First flight: front to back, second: back to front.
+ // New internal west wall touches the north exterior wall (z=34).
+ cb(1.6,H-.5,31,masonry,12,base+H/2,18.5,g);
+ // New south wall touches west interior and east exterior wall.
+ // Wide centered doorway, x=19..29, in front of both stair flights.
+ cb(7,H-.5,1.6,masonry,15.5,base+H/2,3,g);
+ cb(9,H-.5,1.6,masonry,33.5,base+H/2,3,g);
+ cb(10,H-8,1.6,masonry,24,base+8+(H-8)/2,3,g);
+ cb(.6,8,1.8,trim,19,base+4,3,g);
+ cb(.6,8,1.8,trim,29,base+4,3,g);
+ cb(10,.6,1.8,trim,24,base+8,3,g);
  if(level<4){
-   const n=18, rise=H/2/n, zFront=6.5, zRear=27.5, run=19;
+   // Both flights exactly 10 wide, touch at x=23, and run between
+   // the front landing z=8 and turning landing z=28.
+   const n=24, zStart=8, zEnd=28, stepDepth=(zEnd-zStart)/n;
    for(let i=0;i<n;i++){
-     const z=zFront+(i+.5)*run/n;
-     cb(stairWidth,rise,run/n+.025,trim,17.5,base+(i+.5)*rise,z,g);
-     const z2=zRear-(i+.5)*run/n;
-     cb(stairWidth,rise,run/n+.025,trim,28.5,base+H/2+(i+.5)*rise,z2,g);
+     const zUp=zStart+(i+.5)*stepDepth;
+     const zDown=zEnd-(i+.5)*stepDepth;
+     const y1=base+(i+1)*9/n;
+     const y2=base+9+(i+1)*9/n;
+     cb(10,.38,stepDepth+.02,trim,18,y1-.19,zUp,g);
+     cb(10,.38,stepDepth+.02,trim,28,y2-.19,zDown,g);
    }
-   // Full-width shared turning landing joins both flights seamlessly.
-   cb(22,1.1,3.8,stone,23,base+H/2,27.1,g);
-   // Level landing at front, flush with floor, joins second flight.
-   cb(22,1.1,3.5,stone,23,base+H,5.25,g);
+   // Full-width half-storey landing z=28..31: each flight ends at its edge.
+   cb(26,1.1,3,stone,25,base+9,29.5,g);
+   // Second flight terminates at upper landing z=3..8, at next floor level.
+   cb(26,1.1,5,stone,25,base+H,5.5,g);
  }
- // Floor-level landing at entrance: flush with surrounding floor.
- cb(22,1.1,3.5,stone,23,base,5.25,g);
  for(const x of [-7,7,21,33])for(const z of [-35.43,35.43]){
-  cb(2.1,3.6,.22,glass,x,base+H*.55,z,g);
-  cb(2.7,.45,.55,trim,x,base+H*.67,z,g);
+   cb(2.1,3.6,.22,glass,x,base+H*.55,z,g);
+   cb(2.7,.45,.55,trim,x,base+H*.67,z,g);
  }
  for(const z of [-26,-13,0,13,26])cb(.22,3.7,2,glass,39.42,base+H*.55,z,g);
 }
