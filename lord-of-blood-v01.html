@@ -45,67 +45,76 @@ for(const z of [-13,13]){cc(5.5,6,19,masonry,-44,11,z,8);cc(6,6.2,2,trim,-44,21,
 cb(5,5,17,masonry,-47,16,0); // lintel over open entrance
 // Four massive corner towers.
 for(const x of [-44,44])for(const z of [-44,44]){cc(5.5,6.3,22,masonry,x,12,z,8);cc(6.4,6.4,2,trim,x,24,z,8);peak(11,11,11,x,30,z)}
-// Five occupied floors: castle core enlarged, leaving an accessible ring-shaped courtyard.
-// Castle spans x -17..38 and z -34..34, with a wide western forecourt.
-const storeys=[];
+// Five double-height storeys, open interiors and one U-shaped stairwell at rear right.
+const STOREY=18, storeys=[];
+const stairX=24, stairZ=20;
 for(let level=0;level<5;level++){
  const g=new THREE.Group();castle.add(g);storeys.push(g);
- const base=2+level*9;
- // Geschossdecke mit Treppenöffnung hinten rechts (x 20..34, z 17..31).
- cb(55,1.1,51,floorMat,10.5,base,-8.5,g);
- cb(37.5,1.1,17,floorMat,1.75,base,25.5,g);
- cb(4.5,1.1,17,floorMat,35.75,base,25.5,g);
- // Ein echter Absatz je Geschoss, direkt an den durchgehenden Boden angeschlossen.
- cb(7,1.1,5.2,trim,21.5,base+.15,24,g);
- // Outer walls with a large opening in the west face for the ground-floor entrance.
- cb(55,8.4,2.6,masonry,10.5,base+4.7,-34,g);
- cb(55,8.4,2.6,masonry,10.5,base+4.7,34,g);
- cb(2.6,8.4,68,masonry,38,base+4.7,0,g);
- if(level===0){for(const z of [-22,22])cb(2.6,8.4,24,masonry,-17,base+4.7,z,g);cb(2.6,2.5,20,masonry,-17,base+7.7,0,g)}
- else cb(2.6,8.4,68,masonry,-17,base+4.7,0,g);
- // Wendeltreppe rechts hinten: pro Geschoss eine Umdrehung mit ebenem Austritt.
- const sx=27,sz=24,stepsPerFloor=32,radius=3.55;
- if(level<4)for(let step=0;step<stepsPerFloor;step++){
-   const angle=Math.PI+step*Math.PI*2/stepsPerFloor;
-   const stair=cb(4.2,.42,1.75,trim,
-      sx+radius*Math.cos(angle),base+.65+(step+.5)*9/stepsPerFloor,
-      sz+radius*Math.sin(angle),g);
-   stair.rotation.y=-angle;
+ const base=2+level*STOREY;
+ // Floor slab surrounds a 17 x 22 stairwell opening at the rear-right corner.
+ cb(55,1.1,45,floorMat,10.5,base,-11.5,g); // z -34 .. 11
+ cb(38,1.1,23,floorMat,2,base,22.5,g); // x -17 .. 21
+ // Thin landing connector from stairs to main floor at x=21.
+ cb(55,16.9,2.6,masonry,10.5,base+9.0,-34,g);
+ cb(55,16.9,2.6,masonry,10.5,base+9.0,34,g);
+ cb(2.6,16.9,68,masonry,38,base+9.0,0,g);
+ if(level===0){
+   for(const z of [-22,22])cb(2.6,16.9,24,masonry,-17,base+9,z,g);
+   cb(2.6,3,20,masonry,-17,base+16,0,g);
+ }else cb(2.6,16.9,68,masonry,-17,base+9,0,g);
+ // U-shaped staircase: first flight northward, half-height landing,
+ // second flight southward to the next floor. Both flights have real treads.
+ if(level<4){
+   const steps=18, half=STOREY/2, tread=15/steps;
+   for(let i=0;i<steps;i++){
+     const y=base+(i+1)*half/steps;
+     cb(5,.38,tread+.06,trim,25.5,y,12.5+(i+.5)*tread,g);
+     cb(5,.38,tread+.06,trim,32,y+half,27.5-(i+.5)*tread,g);
+   }
+   cb(13,.6,5,trim,28.75,base+half,30,g); // turning landing
+   cb(5.5,.6,5,trim,32,base+STOREY,11.5,g); // upper floor landing
+   // Open connection to the floor along the left side of the upper landing.
+   cb(7,.6,4,trim,26,base+STOREY,11.5,g);
+   // Visible outer handrails following the two flights.
+   for(let i=0;i<steps;i+=2){
+     const yy=base+(i+1)*half/steps;
+     cb(.2,1.3,.2,edgeMat,22.8,yy+.75,12.5+(i+.5)*tread,g);
+     cb(.2,1.3,.2,edgeMat,35,yy+half+.75,27.5-(i+.5)*tread,g);
+   }
  }
- cc(.52,.52,9,trim,sx,base+4.5,sz,12,g);
- if(level<4)for(let step=0;step<16;step++){
-   const a=Math.PI+step*Math.PI*2/16;
-   cc(.12,.12,1.25,edgeMat,sx+5.1*Math.cos(a),
-      base+1.6+step*9/16,sz+5.1*Math.sin(a),6,g);
- }
- // Narrow Gothic glowing windows along external elevations.
  for(const x of [-7,7,21,33])for(const z of [-35.43,35.43]){
-   cb(2.1,3.6,.22,glass,x,base+5,z,g);
-   cb(2.7,.45,.55,trim,x,base+7,z,g);
+   cb(2.1,6,.22,glass,x,base+9,z,g);
+   cb(2.7,.45,.55,trim,x,base+12.3,z,g);
  }
- for(const z of [-26,-13,0,13,26])cb(.22,3.7,2,glass,39.42,base+5,z,g);
+ for(const z of [-26,-13,0,13,26])cb(.22,6,2,glass,39.42,base+9,z,g);
 }
-// High pitched gothic roof, ridge and dormer-like towers.
 const roofs=new THREE.Group();castle.add(roofs);
-const roof= new THREE.Mesh(new THREE.ConeGeometry(49,18,4),roofMat);roof.rotation.y=Math.PI/4;roof.scale.set(1.1,1,1.38);roof.position.set(10.5,57,0);roofs.add(roof);
-for(const z of [-23,23]){cc(4.4,4.9,13,masonry,29,56,z,8,roofs);peak(9,9,12,29,68,z,roofs)}
-// Tall right-hand keep with five internal levels and a steep roof.
+const roof=new THREE.Mesh(new THREE.ConeGeometry(49,18,4),roofMat);
+roof.rotation.y=Math.PI/4;roof.scale.set(1.1,1,1.38);
+roof.position.set(10.5,102,0);roofs.add(roof);
+for(const z of [-23,23]){cc(4.4,4.9,13,masonry,29,101,z,8,roofs);peak(9,9,12,29,113,z,roofs)}
+// Right-hand keep extended to match the taller five-storey main building.
 const keep=new THREE.Group();castle.add(keep);
-cc(8.5,9.4,66,masonry,32,35,18,10,keep);
+cc(8.5,9.4,112,masonry,32,58,18,10,keep);
 for(let level=0;level<5;level++){
- cc(8.5,8.5,.8,floorMat,32,4+level*12,18,10,keep);
- for(let a=0;a<8;a++){const t=a*Math.PI/4;const o=cb(1.3,3,.35,glass,32+8.6*Math.cos(t),10+level*11,18+8.6*Math.sin(t),keep);o.rotation.y=-t;}
+ cc(8.5,8.5,.8,floorMat,32,4+level*STOREY,18,10,keep);
+ for(let a=0;a<8;a++){
+   const t=a*Math.PI/4;
+   const o=cb(1.3,5,.35,glass,32+8.6*Math.cos(t),11+level*STOREY,18+8.6*Math.sin(t),keep);
+   o.rotation.y=-t;
+ }
 }
-cc(9.5,9.5,2,trim,32,69,18,10,keep);peak(17,17,19,32,79,18,keep);
+cc(9.5,9.5,2,trim,32,115,18,10,keep);
+peak(17,17,19,32,125,18,keep);
 // Toggle floors without modifying the terrain, bridge or touch controls.
 const controls=document.getElementById('controls');const floorButton=document.createElement('button');floorButton.textContent='Etagen: Alle';controls.appendChild(floorButton);
 let floorView=5;floorButton.onclick=()=>{floorView=(floorView+5)%6;for(let i=0;i<5;i++)storeys[i].visible=i<floorView;roofs.visible=floorView===5;keep.visible=floorView===5;floorButton.textContent=floorView===5?'Etagen: Alle':'Etagen: '+floorView};
 document.querySelector('#header small').textContent='V01 · DIE GOTISCHE FESTUNG';
 
 // Camera orbit, tilt, zoom and two-finger pan.
-let target=new THREE.Vector3(0,0,0),yaw=.85,pitch=.92,dist=225;function updateCamera(){let c=Math.cos(pitch);camera.position.set(target.x+dist*c*Math.sin(yaw),target.y+dist*Math.sin(pitch),target.z+dist*c*Math.cos(yaw));camera.lookAt(target)}updateCamera();let touches=new Map(),prevMid=null,prevDistance=0;
+let target=new THREE.Vector3(0,0,0),yaw=.85,pitch=.92,dist=260;function updateCamera(){let c=Math.cos(pitch);camera.position.set(target.x+dist*c*Math.sin(yaw),target.y+dist*Math.sin(pitch),target.z+dist*c*Math.cos(yaw));camera.lookAt(target)}updateCamera();let touches=new Map(),prevMid=null,prevDistance=0;
 function touchMetrics(){let a=[...touches.values()];if(a.length<2)return null;return {x:(a[0].x+a[1].x)/2,y:(a[0].y+a[1].y)/2,d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)}}
 renderer.domElement.addEventListener('pointerdown',e=>{renderer.domElement.setPointerCapture(e.pointerId);touches.set(e.pointerId,{x:e.clientX,y:e.clientY});let m=touchMetrics();if(m){prevMid=m;prevDistance=m.d}});renderer.domElement.addEventListener('pointermove',e=>{if(!touches.has(e.pointerId))return;let p=touches.get(e.pointerId),dx=e.clientX-p.x,dy=e.clientY-p.y;touches.set(e.pointerId,{x:e.clientX,y:e.clientY});if(touches.size===1){yaw-=dx*.007;pitch=Math.max(.13,Math.min(1.53,pitch+dy*.006))}else{let m=touchMetrics();if(prevMid&&m){let right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));let forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));target.addScaledVector(right,-(m.x-prevMid.x)*dist*.0014);target.addScaledVector(forward,(m.y-prevMid.y)*dist*.0014);dist=Math.max(25,Math.min(400,dist*prevDistance/Math.max(1,m.d)));}prevMid=m;prevDistance=m.d}updateCamera()});function end(e){touches.delete(e.pointerId);let m=touchMetrics();prevMid=m;prevDistance=m?m.d:0}renderer.domElement.addEventListener('pointerup',end);renderer.domElement.addEventListener('pointercancel',end);renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();dist=Math.max(25,Math.min(400,dist*Math.exp(e.deltaY*.001)));updateCamera()},{passive:false});
-document.getElementById('reset').onclick=()=>{target.set(0,0,0);yaw=.85;pitch=.92;dist=225;updateCamera()};document.getElementById('grid').onclick=e=>{lines.visible=!lines.visible;e.target.textContent='Raster: '+(lines.visible?'An':'Aus')};window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});document.getElementById('loading').remove();function animate(){requestAnimationFrame(animate);renderer.render(scene,camera)}animate();
+document.getElementById('reset').onclick=()=>{target.set(0,0,0);yaw=.85;pitch=.92;dist=260;updateCamera()};document.getElementById('grid').onclick=e=>{lines.visible=!lines.visible;e.target.textContent='Raster: '+(lines.visible?'An':'Aus')};window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});document.getElementById('loading').remove();function animate(){requestAnimationFrame(animate);renderer.render(scene,camera)}animate();
 }catch(e){document.getElementById('loading').remove();let el=document.getElementById('error');el.style.display='block';el.textContent='3D-Ansicht konnte nicht gestartet werden: '+e.message;console.error(e)}
 </script></body></html>
