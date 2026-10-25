@@ -1,109 +1,33 @@
+
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
   <meta charset="UTF-8">
-
   <meta name="viewport"
-        content="width=device-width,
-                 initial-scale=1.0,
-                 maximum-scale=1.0,
-                 user-scalable=no">
-
-  <title>Lord of Blood V0.1</title>
-
+        content="width=device-width, initial-scale=1.0">
+  <title>Lord of Blood V02</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     html, body {
       margin: 0;
-      padding: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
       background: #090b12;
-      color: #e9ddc9;
-      font-family: Georgia, serif;
     }
 
-    #game {
-      display: block;
+    iframe {
       width: 100%;
       height: 100%;
-      height: 100dvh;
       border: none;
-      background: #090b12;
-    }
-
-    #error {
-      display: none;
-      position: fixed;
-      inset: 0;
-      padding: 30px;
-      background: #090b12;
-      color: #e9ddc9;
-      text-align: center;
-      align-content: center;
-      font-family: Arial, sans-serif;
-    }
-
-    #error h1 {
-      color: #dfb6a7;
+      display: block;
     }
   </style>
 </head>
-
 <body>
-
   <iframe
-    id="game"
-    title="Lord of Blood V0.1"
+    src="./lord-of-blood-v02.html"
+    title="Lord of Blood V02"
     allowfullscreen>
   </iframe>
-
-  <div id="error">
-    <h1>LORD OF BLOOD</h1>
-    <p>Die Spieldatei konnte nicht gefunden werden.</p>
-    <p>Benötigte Datei:</p>
-    <strong>lord-of-blood-v01.html</strong>
-  </div>
-
-  <script>
-    const gameFile = "./lord-of-blood-v01.html";
-
-    async function startGame() {
-      try {
-        const response = await fetch(gameFile, {
-          cache: "no-store"
-        });
-
-        if (!response.ok) {
-          throw new Error(
-            "HTTP-Fehler " + response.status
-          );
-        }
-
-        document.getElementById("game").src =
-          gameFile;
-
-      } catch (error) {
-        document.getElementById("game").style.display =
-          "none";
-
-        document.getElementById("error").style.display =
-          "block";
-
-        console.error(
-          "Lord of Blood konnte nicht geladen werden:",
-          error
-        );
-      }
-    }
-
-    startGame();
-  </script>
-
 </body>
 </html>
