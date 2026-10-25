@@ -152,11 +152,7 @@ for(let level=0;level<5;level++){
    // Second flight terminates at upper landing z=3..8, at next floor level.
    cb(26,1.1,5,stone,25,base+H,5.5,g);
  }
- for(const x of [-7,7,21,33])for(const z of [-35.43,35.43]){
-   cb(2.1,3.6,.22,glass,x,base+H*.55,z,g);
-   cb(2.7,.45,.55,trim,x,base+H*.67,z,g);
- }
- for(const z of [-26,-13,0,13,26])cb(.22,3.7,2,glass,39.42,base+H*.55,z,g);
+ // Alle Fassadenfenster entfernt (Fenster-Neuaufbau folgt spaeter).
 }
 // Roof and right-hand tower raised to match the five 18-unit floors.
 const roofs=new THREE.Group();castle.add(roofs);
@@ -168,7 +164,7 @@ const keep=new THREE.Group();castle.add(keep);
 cc(8.5,9.4,98,masonry,32,51,18,10,keep);
 for(let level=0;level<5;level++){
  cc(8.5,8.5,.8,floorMat,32,2+level*18,18,10,keep);
- for(let a=0;a<8;a++){const t=a*Math.PI/4;const o=cb(1.3,3,.35,glass,32+8.6*Math.cos(t),10+level*18,18+8.6*Math.sin(t),keep);o.rotation.y=-t;}
+ // Keine Turmfenster.
 }
 cc(9.5,9.5,2,trim,32,101,18,10,keep);peak(17,17,19,32,111,18,keep);
 // Toggle floors without modifying the terrain, bridge or touch controls.
