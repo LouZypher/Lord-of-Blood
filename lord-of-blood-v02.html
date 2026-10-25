@@ -138,6 +138,13 @@ for(let level=0;level<5;level++){
     // Main castle entrance: wall cut precisely to the Gothic timber arch.
     // Opening width 10.4, vertical shoulders 9 and pointed apex 14.5.
     const archHalf=5.2, shoulder=9, apex=14.5;
+    // Close the rectangular gaps between the existing facade and the pointed door.
+    // Existing wall ends at z=+/-10; timber frame begins at z=+/-5.2.
+    // These two masonry piers follow the full height of the ground floor.
+    for(const side of [-1,1]){
+      const inner=archHalf, outer=10.02;
+      cb(2.6,H-.5,outer-inner,masonry,-17,base+(H-.5)/2,side*(inner+outer)/2,g);
+    }
     const wallTop=H-.5;
     const spandrel=new THREE.Shape();
     spandrel.moveTo(-archHalf,wallTop);
