@@ -63,7 +63,7 @@ for(let level=0;level<5;level++){
  else {
    // Flush lower and upper landings. No floor beneath the flights.
    cb(26,1.1,5,stone,25,base,5.5,g); // front z=3..8
-   cb(26,1.1,1.7,stone,25,base,31.85,g); // rear z=31..34
+   cb(26,1.1,3,stone,25,base,32.5,g); // rear z=31..34
    cb(5,1.1,23,stone,35.5,base,19.5,g); // east perimeter
  }
  // Retain castle exterior walls, north and east enclose the stairwell.
@@ -86,8 +86,8 @@ for(let level=0;level<5;level++){
  cb(10,.6,1.8,trim,24,base+8,3,g);
  if(level<4){
    // Both flights exactly 10 wide, touch at x=23, and run between
-   // the front landing z=8 and turning landing z=28.
-   const n=24, zStart=8, zEnd=28, stepDepth=(zEnd-zStart)/n;
+   // the front landing z=8 and rear turning landing z=31.3.
+   const n=28, zStart=8, zEnd=31.3, stepDepth=(zEnd-zStart)/n;
    for(let i=0;i<n;i++){
      const zUp=zStart+(i+.5)*stepDepth;
      const zDown=zEnd-(i+.5)*stepDepth;
@@ -96,8 +96,8 @@ for(let level=0;level<5;level++){
      cb(10,.38,stepDepth+.02,trim,18,y1-.19,zUp,g);
      cb(10,.38,stepDepth+.02,trim,28,y2-.19,zDown,g);
    }
-   // Full-width half-storey landing z=28..32.7, flush with the inner rear wall.
-   cb(26,1.1,4.7,stone,25,base+9,30.35,g);
+   // Full-width half-storey landing z=28..31: each flight ends at its edge.
+   cb(26,1.1,3,stone,25,base+9,29.5,g);
    // Second flight terminates at upper landing z=3..8, at next floor level.
    cb(26,1.1,5,stone,25,base+H,5.5,g);
  }
