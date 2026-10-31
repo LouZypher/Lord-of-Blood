@@ -86,7 +86,8 @@ const masonry=new THREE.MeshStandardMaterial({map:wallTexture,color:0xffffff,rou
 const trim=new THREE.MeshStandardMaterial({map:wallTexture,color:0xb5a6ad,roughness:.87});
 const roofMat=new THREE.MeshStandardMaterial({map:slateTexture,color:0xffffff,roughness:.94});
 const floorMat=new THREE.MeshStandardMaterial({map:stoneTexture,color:0xffffff,roughness:.94});
-const glass=new THREE.MeshStandardMaterial({color:0x7e0d19,emissive:0xa82416,emissiveIntensity:1.45,roughness:.22,metalness:.14});
+const glass=new THREE.MeshStandardMaterial({color:0x731e32,emissive:0x941e35,emissiveIntensity:.65,roughness:.2,metalness:.1,side:THREE.DoubleSide});
+ const lead=new THREE.MeshStandardMaterial({color:0x211e26,metalness:.6,roughness:.5});
 // Texture the existing courtyard, bridge and battlements, too.
 paving.map=stoneTexture;paving.color.set(0xffffff);paving.needsUpdate=true;
 wallmat.map=wallTexture;wallmat.color.set(0xc3bac1);wallmat.needsUpdate=true;
@@ -129,10 +130,56 @@ for(let level=0;level<5;level++){
    cb(26,1.1,3,stone,25,base,32.5,g); // rear z=31..34
    cb(5,1.1,23,stone,35.5,base,19.5,g); // east perimeter
  }
- // Retain castle exterior walls, north and east enclose the stairwell.
- cb(55,H-.5,2.6,masonry,10.5,base+H/2,-34,g);
- cb(55,H-.5,2.6,masonry,10.5,base+H/2,34,g);
- cb(2.6,H-.5,68,masonry,38,base+H/2,0,g);
+ // Pointed-arch stained-glass windows are real wall openings, not panels pasted onto stone.
+ // Each facade section is constructed around the glass, including the Gothic spandrels.
+ function windowWall(centerX,centerZ,alongX,length,positions){
+   const depth=2.6, height=H-.5, half=1.9, sill=5.0, shoulder=10.0, apex=13.3;
+   const group=new THREE.Group();g.add(group);
+   group.position.set(centerX,base,centerZ);
+   // Local X follows the wall, local Y is vertical, local Z goes through its depth.
+   if(!alongX)group.rotation.y=Math.PI/2;
+   const wallBox=(w,h,d,x,y,z)=>cb(w,h,d,masonry,x,y,z,group);
+   let previous=-length/2;
+   for(const at of positions){
+     const left=at-half,right=at+half;
+     if(left>previous)wallBox(left-previous,height,depth,(left+previous)/2,height/2,0);
+     wallBox(2*half,sill,depth,at,sill/2,0);
+     const above=new THREE.Shape();
+     above.moveTo(-half,height);above.lineTo(half,height);above.lineTo(half,shoulder);
+     above.quadraticCurveTo(half,apex-.75,0,apex);
+     above.quadraticCurveTo(-half,apex-.75,-half,shoulder);above.closePath();
+     const fill=new THREE.Mesh(new THREE.ExtrudeGeometry(above,{depth,bevelEnabled:false,curveSegments:18}),masonry);
+     fill.position.set(at,0,-depth/2);group.add(fill);
+     const glassShape=new THREE.Shape();
+     glassShape.moveTo(-half+.16,sill+.10);glassShape.lineTo(half-.16,sill+.10);
+     glassShape.lineTo(half-.16,shoulder);
+     glassShape.quadraticCurveTo(half-.16,apex-.95,0,apex-.24);
+     glassShape.quadraticCurveTo(-half+.16,apex-.95,-half+.16,shoulder);
+     glassShape.closePath();
+     const pane=new THREE.Mesh(new THREE.ShapeGeometry(glassShape,20),glass);
+     pane.position.set(at,0,-depth/2+.18);group.add(pane);
+     // Stone pointed arch, side jambs, sill, and fine leaded-glass tracery.
+     const pts=[];
+     for(let i=0;i<=16;i++){
+       const t=i/16,u=-half+half*t;
+       pts.push(new THREE.Vector3(at+u,(1-t)*(1-t)*shoulder+2*(1-t)*t*(apex-.75)+t*t*apex,-depth/2-.13));
+     }
+     for(let i=1;i<=16;i++){
+       const t=i/16,u=half*t;
+       pts.push(new THREE.Vector3(at+u,(1-t)*(1-t)*apex+2*(1-t)*t*(apex-.75)+t*t*shoulder,-depth/2-.13));
+     }
+     group.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),48,.21,6,false),trim));
+     for(const u of [-half,half])cb(.32,shoulder-sill,.45,trim,at+u,(shoulder+sill)/2,-depth/2-.12,group);
+     cb(2*half+.25,.3,.52,trim,at,sill,-depth/2-.16,group);
+     cb(.11,apex-sill-.35,.12,lead,at,(apex+sill)/2-.18,-depth/2-.24,group);
+     cb(2*half-.25,.12,.12,lead,at,(shoulder+sill)/2,-depth/2-.24,group);
+     previous=right;
+   }
+   if(previous<length/2)wallBox(length/2-previous,height,depth,(previous+length/2)/2,height/2,0);
+ }
+ windowWall(10.5,-34,true,55,[-8,4,17,29]);
+ windowWall(10.5,34,true,55,[-8,4,17,29]);
+ windowWall(38,0,false,68,[-24,-10,5,20]);
  if(level===0){
    for(const z of [-22,22])cb(2.6,H-.5,24,masonry,-17,base+H/2,z,g);
     // Main castle entrance: wall cut precisely to the Gothic timber arch.
@@ -204,7 +251,7 @@ for(let level=0;level<5;level++){
       for(const y of [2.7,7.1])cb(.2,.3,2.2,iron,doorX-.19,base+y,z,g);
       cb(.34,.7,.22,iron,doorX-.27,base+5,z>0?.65:-.65,g);
     }
- }else cb(2.6,H-.5,68,masonry,-17,base+H/2,0,g);
+ }else windowWall(-17,0,false,68,[-24,-10,10,24]);
  // New internal west wall touches the north exterior wall (z=34).
  cb(1.6,H-.5,31,masonry,12,base+H/2,18.5,g);
  // New south wall touches west interior and east exterior wall.
@@ -234,7 +281,7 @@ for(let level=0;level<5;level++){
    // Second flight terminates at upper landing z=3..8, at next floor level.
    cb(26,1.1,5,stone,25,base+H,5.5,g);
  }
- // Alle Fassadenfenster entfernt (Fenster-Neuaufbau folgt spaeter).
+ // All five levels now contain recessed Gothic pointed-arch glass windows.
 }
 // Roof and right-hand tower raised to match the five 18-unit floors.
 const roofs=new THREE.Group();castle.add(roofs);
@@ -251,7 +298,7 @@ peak(17,17,19,32,towerBase+27.5,18,keep);
 // Toggle floors without modifying the terrain, bridge or touch controls.
 const controls=document.getElementById('controls');const floorButton=document.createElement('button');floorButton.textContent='Etagen: Alle';controls.appendChild(floorButton);
 let floorView=5;floorButton.onclick=()=>{floorView=(floorView+5)%6;for(let i=0;i<5;i++)storeys[i].visible=i<floorView;roofs.visible=floorView===5;keep.visible=floorView===5;floorButton.textContent=floorView===5?'Etagen: Alle':'Etagen: '+floorView};
-document.querySelector('#header small').textContent='V02 · GOTISCHES SCHLOSSPORTAL';
+document.querySelector('#header small').textContent='V02 · GOTISCHE GLASFENSTER';
 
 // Camera orbit, tilt, zoom and two-finger pan.
 let target=new THREE.Vector3(0,0,0),yaw=.85,pitch=.92,dist=225;function updateCamera(){let c=Math.cos(pitch);camera.position.set(target.x+dist*c*Math.sin(yaw),target.y+dist*Math.sin(pitch),target.z+dist*c*Math.cos(yaw));camera.lookAt(target)}updateCamera();let touches=new Map(),prevMid=null,prevDistance=0;
